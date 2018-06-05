@@ -10,41 +10,41 @@ namespace Light2D.Examples
 {
     public class RocketEngine : MonoBehaviour
     {
-        public float ForcePercent;
-        public float MaxForce;
-        public ParticleSystem Particles;
-        public Rigidbody2D Rigidbody;
-        public Vector2 LocalForceDirection = Vector3.up;
-        public bool IsEnabled = true;
+        public float forcePercent;
+        public float maxForce;
+        public ParticleSystem particles;
+        public Rigidbody2D rigidbody;
+        public Vector2 localForceDirection = Vector3.up;
+        public bool isEnabled = true;
         private ParticleSystem[] _allParticles;
-        private Transform myTransform;
-        private Transform rigidbodyTransform;
+        private Transform _myTransform;
+        private Transform _rigidbodyTransform;
 
         private void Awake()
         {
-            myTransform = transform;
-            rigidbodyTransform = Rigidbody.transform;
-            _allParticles = Particles.GetComponentsInChildren<ParticleSystem>();
-            LocalForceDirection = LocalForceDirection.normalized;
+            _myTransform = transform;
+            _rigidbodyTransform = rigidbody.transform;
+            _allParticles = particles.GetComponentsInChildren<ParticleSystem>();
+            localForceDirection = localForceDirection.normalized;
         }
 
         private void Update()
         {
-            foreach (var particle in _allParticles)
-                particle.enableEmission = IsEnabled && ForcePercent >= Random.value;
+            foreach (ParticleSystem particle in _allParticles)
+                particle.enableEmission = isEnabled && forcePercent >= Random.value;
         }
 
         private void FixedUpdate()
         {
-            if (!IsEnabled) return;
-            var pos = transform.position;
-            var force = myTransform.TransformDirection(LocalForceDirection)*MaxForce*Mathf.Clamp01(ForcePercent);
-            Rigidbody.AddForceAtPosition(force, pos);
+            if (!isEnabled) return;
+            Vector3 pos = transform.position;
+            Vector3 force = _myTransform.TransformDirection(localForceDirection)*maxForce*Mathf.Clamp01(forcePercent);
+            rigidbody.AddForceAtPosition(force, pos);
         }
 
         private void OnDrawGizmos()
         {
-            Gizmos.DrawRay(transform.position, transform.TransformDirection(-LocalForceDirection));
+            Gizmos.DrawRay(transform.position, transform.TransformDirection(-localForceDirection));
         }
     }
 }

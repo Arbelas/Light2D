@@ -8,189 +8,165 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace Light2D
-{
+namespace Light2D {
     /// <summary>
     /// Used to draw lights. Puts LightOrigin world position to UV1.
     /// Supports Point and Line light types.
     /// </summary>
     [ExecuteInEditMode]
-    public class LightSprite : CustomSprite
-    {
-        public static List<LightSprite> AllLightSprites = new List<LightSprite>();
-        public Vector3 LightOrigin = new Vector3(0, 0, 1);
-        public LightShape Shape = LightShape.Point;
+    public class LightSprite : CustomSprite {
+        public static List<LightSprite> allLightSprites = new List<LightSprite>();
+        public Vector3 lightOrigin = new Vector3(0, 0, 1);
+        public LightShape shape = LightShape.Point;
         private Matrix4x4 _modelMatrix;
         private Vector3 _oldLightOrigin;
         private LightShape _oldLightShape;
 
-        public MeshRenderer Renderer
-        {
-            get { return _meshRenderer; }
+        public MeshRenderer Renderer {
+            get { return meshRenderer; }
         }
 
-        protected override void OnEnable()
-        {
+        protected override void OnEnable() {
             base.OnEnable();
-            AllLightSprites.Add(this);
+            allLightSprites.Add(this);
         }
 
-        void OnDisable()
-        {
-            AllLightSprites.Remove(this);
+        void OnDisable() {
+            allLightSprites.Remove(this);
         }
 
         /// <summary>
         /// Update UV1 which is used for raytracking in shader. UV1 is set to world position of LightOrigin.
         /// </summary>
-        private void UpdatePosition()
-        {
-            if (Sprite == null || !Application.isPlaying)
+        private void UpdatePosition() {
+            if (sprite == null || !Application.isPlaying)
                 return;
 
-            var mat = _modelMatrix;
-            Vector2 size = Sprite.bounds.size;
+            Matrix4x4 mat = _modelMatrix;
+            Vector2 size = sprite.bounds.size;
 
-            if (Shape == LightShape.Point)
-            {
+            if (shape == LightShape.Point) {
                 // LightOrigin needs to be send in world position instead of local because 
                 // Unity non uniform scaling is breaking model matrix in shader.
-                var pos = mat.MultiplyPoint(((Vector2)LightOrigin).Mul(size));
-                if (!LightingSystem.Instance.XZPlane)
-                {
-                    for (int i = 0; i < _uv1.Length; i++)
-                        _uv1[i] = pos;
+                Vector3 pos = mat.MultiplyPoint(((Vector2)lightOrigin).Mul(size));
+                if (!LightingSystem.Instance.xzPlane) {
+                    for (int i = 0; i < uv1.Length; i++)
+                        uv1[i] = pos;
+                } else {
+                    Vector2 p = new Vector2(pos.x, pos.z);
+                    for (int i = 0; i < uv1.Length; i++)
+                        uv1[i] = p;
                 }
-                else
-                {
-                    var p = new Vector2(pos.x, pos.z);
-                    for (int i = 0; i < _uv1.Length; i++)
-                        _uv1[i] = p;
-                }
-            }
-            else if (Shape == LightShape.Line)
-            {
-                var lpos = mat.MultiplyPoint(new Vector2(-0.5f, LightOrigin.y).Mul(size));
-                var rpos = mat.MultiplyPoint(new Vector2(0.5f, LightOrigin.y).Mul(size));
-                if (!LightingSystem.Instance.XZPlane)
-                {
-                    _uv1[0] = lpos;
-                    _uv1[1] = rpos;
-                    _uv1[2] = lpos;
-                    _uv1[3] = rpos;
-                }
-                else
-                {
-                    var lp = new Vector2(lpos.x, lpos.z);
-                    var rp = new Vector2(rpos.x, rpos.z);
-                    _uv1[0] = lp;
-                    _uv1[1] = rp;
-                    _uv1[2] = lp;
-                    _uv1[3] = rp;
+            } else if (shape == LightShape.Line) {
+                Vector3 lpos = mat.MultiplyPoint(new Vector2(-0.5f, lightOrigin.y).Mul(size));
+                Vector3 rpos = mat.MultiplyPoint(new Vector2(0.5f, lightOrigin.y).Mul(size));
+                if (!LightingSystem.Instance.xzPlane) {
+                    uv1[0] = lpos;
+                    uv1[1] = rpos;
+                    uv1[2] = lpos;
+                    uv1[3] = rpos;
+                } else {
+                    Vector2 lp = new Vector2(lpos.x, lpos.z);
+                    Vector2 rp = new Vector2(rpos.x, rpos.z);
+                    uv1[0] = lp;
+                    uv1[1] = rp;
+                    uv1[2] = lp;
+                    uv1[3] = rp;
                 }
             }
         }
 
-        protected override void UpdateMeshData(bool forceUpdate = false)
-        {
+        protected override void UpdateMeshData(bool forceUpdate = false) {
             if (IsPartOfStaticBatch)
                 return;
 
-            var objMat = transform.localToWorldMatrix;
+            Matrix4x4 objMat = transform.localToWorldMatrix;
             if (!objMat.FastEquals(_modelMatrix) ||
-                _oldLightOrigin != LightOrigin || _oldLightShape != Shape || forceUpdate)
-            {
+                _oldLightOrigin != lightOrigin || _oldLightShape != shape || forceUpdate) {
                 _modelMatrix = objMat;
-                _oldLightOrigin = LightOrigin;
-                _oldLightShape = Shape;
+                _oldLightOrigin = lightOrigin;
+                _oldLightShape = shape;
                 UpdatePosition();
-                _isMeshDirty = true;
+                isMeshDirty = true;
             }
 
             base.UpdateMeshData(forceUpdate);
         }
 
-        public enum LightShape
-        {
+        public enum LightShape {
             Point,
             Line,
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            if (Sprite == null)
+        private void OnDrawGizmosSelected() {
+            if (sprite == null)
                 return;
 
-            var size = Sprite.bounds.size;
-            if (Shape == LightShape.Point)
-            {
-                var center = transform.TransformPoint(LightOrigin);
+            Vector3 size = sprite.bounds.size;
+            if (shape == LightShape.Point) {
+                Vector3 center = transform.TransformPoint(lightOrigin);
                 Gizmos.DrawLine(
                     center + transform.TransformDirection(new Vector2(-0.1f, 0)),
                     center + transform.TransformDirection(new Vector2(0.1f, 0)));
                 Gizmos.DrawLine(
                     center + transform.TransformDirection(new Vector2(0, -0.1f)),
                     center + transform.TransformDirection(new Vector2(0, 0.1f)));
-            }
-            else if (Shape == LightShape.Line && Sprite != null)
-            {
-                var lpos = transform.TransformPoint(new Vector3(-0.5f, LightOrigin.y).Mul(size));
-                var rpos = transform.TransformPoint(new Vector3(0.5f, LightOrigin.y).Mul(size));
+            } else if (shape == LightShape.Line && sprite != null) {
+                Vector3 lpos = transform.TransformPoint(new Vector3(-0.5f, lightOrigin.y).Mul(size));
+                Vector3 rpos = transform.TransformPoint(new Vector3(0.5f, lightOrigin.y).Mul(size));
                 Gizmos.DrawLine(lpos, rpos);
             }
         }
 
-        public void DrawLightingNow(Vector2 lightCamLocalPos)
-        {
-            var material = _meshRenderer.sharedMaterial;
+        public void DrawLightingNow(Vector2 lightCamLocalPos) {
+            Material mat = meshRenderer.sharedMaterial;
 
-            if (!material.SetPass(0))
+            if (!mat.SetPass(0))
                 return;
 
-            var v1 = _modelMatrix.MultiplyPoint(_vertices[0]) - (Vector3)lightCamLocalPos;
-            var v2 = _modelMatrix.MultiplyPoint(_vertices[2]) - (Vector3)lightCamLocalPos;
-            var v3 = _modelMatrix.MultiplyPoint(_vertices[3]) - (Vector3)lightCamLocalPos;
-            var v4 = _modelMatrix.MultiplyPoint(_vertices[1]) - (Vector3)lightCamLocalPos;
+            Vector3 v1 = _modelMatrix.MultiplyPoint(vertices[0]) - (Vector3)lightCamLocalPos;
+            Vector3 v2 = _modelMatrix.MultiplyPoint(vertices[2]) - (Vector3)lightCamLocalPos;
+            Vector3 v3 = _modelMatrix.MultiplyPoint(vertices[3]) - (Vector3)lightCamLocalPos;
+            Vector3 v4 = _modelMatrix.MultiplyPoint(vertices[1]) - (Vector3)lightCamLocalPos;
 
             GL.Begin(GL.QUADS);
 
-            GL.Color(Color);
+            GL.Color(color);
 
-            GL.MultiTexCoord(0, _uv0[0]);
-            GL.MultiTexCoord(1, _uv1[0] - lightCamLocalPos);
+            GL.MultiTexCoord(0, uv0[0]);
+            GL.MultiTexCoord(1, uv1[0] - lightCamLocalPos);
             GL.Vertex(v1);
 
-            GL.MultiTexCoord(0, _uv0[2]);
-            GL.MultiTexCoord(1, _uv1[2] - lightCamLocalPos);
+            GL.MultiTexCoord(0, uv0[2]);
+            GL.MultiTexCoord(1, uv1[2] - lightCamLocalPos);
             GL.Vertex(v2);
 
-            GL.MultiTexCoord(0, _uv0[3]);
-            GL.MultiTexCoord(1, _uv1[3] - lightCamLocalPos);
+            GL.MultiTexCoord(0, uv0[3]);
+            GL.MultiTexCoord(1, uv1[3] - lightCamLocalPos);
             GL.Vertex(v3);
 
-            GL.MultiTexCoord(0, _uv0[1]);
-            GL.MultiTexCoord(1, _uv1[1] - lightCamLocalPos);
+            GL.MultiTexCoord(0, uv0[1]);
+            GL.MultiTexCoord(1, uv1[1] - lightCamLocalPos);
             GL.Vertex(v4);
 
             GL.End();
         }
 
-        public void DrawLightNormalsNow(Material material)
-        {
-            Vector2 size = Sprite.bounds.size;
-            Vector2 center = _modelMatrix.MultiplyPoint3x4(((Vector2) LightOrigin).Mul(size));
-            var lightPos = new Vector4(center.x, center.y, LightOrigin.z);
+        public void DrawLightNormalsNow(Material mat) {
+            Vector2 size = sprite.bounds.size;
+            Vector2 center = _modelMatrix.MultiplyPoint3x4(((Vector2)lightOrigin).Mul(size));
+            Vector4 lightPos = new Vector4(center.x, center.y, lightOrigin.z);
 
-            material.SetVector("_LightPos", lightPos);
+            mat.SetVector("_LightPos", lightPos);
 
-            if (!material.SetPass(0))
+            if (!mat.SetPass(0))
                 return;
 
-            var v1 = _modelMatrix.MultiplyPoint3x4(_vertices[0]);
-            var v2 = _modelMatrix.MultiplyPoint3x4(_vertices[2]);
-            var v3 = _modelMatrix.MultiplyPoint3x4(_vertices[3]);
-            var v4 = _modelMatrix.MultiplyPoint3x4(_vertices[1]);
-            
+            Vector3 v1 = _modelMatrix.MultiplyPoint3x4(vertices[0]);
+            Vector3 v2 = _modelMatrix.MultiplyPoint3x4(vertices[2]);
+            Vector3 v3 = _modelMatrix.MultiplyPoint3x4(vertices[3]);
+            Vector3 v4 = _modelMatrix.MultiplyPoint3x4(vertices[1]);
+
             GL.Begin(GL.QUADS);
             GL.Vertex(v1);
             GL.Vertex(v2);

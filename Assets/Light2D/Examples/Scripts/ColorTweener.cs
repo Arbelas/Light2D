@@ -9,8 +9,8 @@ namespace Light2D.Examples
 {
     public class ColorTweener : MonoBehaviour
     {
-        public float TweenInterval = 2.5f;
-        public float ColorMul = 2;
+        public float tweenInterval = 2.5f;
+        public float colorMul = 2;
         private SpriteRenderer _spriteRenderer;
         private float _timer;
         private Color _targetColor;
@@ -30,14 +30,14 @@ namespace Light2D.Examples
 
             if (_timer <= 0)
             {
-                _timer = TweenInterval;
+                _timer = tweenInterval;
                 _startColor = _spriteRenderer.color;
                 _targetColor = new Vector4(
-                    Mathf.Clamp01(Random.value*ColorMul), Mathf.Clamp01(Random.value*ColorMul),
-                    Mathf.Clamp01(Random.value*ColorMul), Mathf.Clamp01(Random.value*ColorMul));
+                    Mathf.Clamp01(Random.value*colorMul), Mathf.Clamp01(Random.value*colorMul),
+                    Mathf.Clamp01(Random.value*colorMul), Mathf.Clamp01(Random.value*colorMul));
             }
 
-            _spriteRenderer.color = Color.Lerp(_startColor, _targetColor, 1 - _timer/TweenInterval);
+            _spriteRenderer.color = Color.Lerp(_startColor, _targetColor, 1 - _timer/tweenInterval);
         }
     }
 }

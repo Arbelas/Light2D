@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 /*
 
 That shader is used to merge light sources, abmient light and game textures into one.
@@ -60,7 +62,7 @@ SubShader {
 			v2f vert (appdata_t v)
 			{
 				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.texcoordGame = v.texcoord;
 				o.texcoordLight = (o.texcoordGame - 0.5)*_Scale + 0.5 + _Offset;
 				o.texcoordAmbient = (o.texcoordLight - 0.5)*_ExtendedToSmallTextureScale + 0.5;

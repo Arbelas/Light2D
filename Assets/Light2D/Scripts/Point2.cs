@@ -119,15 +119,9 @@ namespace Light2D
             return new Vector2(p.x / div, p.y / div);
         }
 
-        public static Point2 one
-        {
-            get { return new Point2(1, 1); }
-        }
+        public static Point2 one = new Point2(1, 1);
 
-        public static Point2 zero
-        {
-            get { return new Point2(0, 0); }
-        }
+        public static Point2 zero = new Point2(0, 0);
 
         public override string ToString()
         {

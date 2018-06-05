@@ -8,11 +8,11 @@ namespace Light2D.Examples
 {
     public class RotationTweener : MonoBehaviour
     {
-        public float AngularSpeed;
+        public float angularSpeed;
 
         void Update()
         {
-            transform.rotation *= Quaternion.Euler(0, 0, AngularSpeed*Time.deltaTime);
+            transform.rotation *= Quaternion.Euler(0, 0, angularSpeed*Time.deltaTime);
         }
     }
 }

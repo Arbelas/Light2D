@@ -9,7 +9,7 @@ namespace Light2D.Examples
     [ExecuteInEditMode]
     public class SortingOrderSetter : MonoBehaviour
     {
-        public int SortingOrder;
+        public int sortingOrder;
 
         private void Awake()
         {
@@ -28,9 +28,9 @@ namespace Light2D.Examples
 
         public void Set()
         {
-            foreach (var rend in GetComponentsInChildren<Renderer>())
+            foreach (Renderer rend in GetComponentsInChildren<Renderer>())
             {
-                rend.sortingOrder = SortingOrder;
+                rend.sortingOrder = sortingOrder;
             }
         }
     }

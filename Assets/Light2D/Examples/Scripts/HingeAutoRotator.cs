@@ -8,27 +8,27 @@ namespace Light2D.Examples
 {
     public class HingeAutoRotator : MonoBehaviour
     {
-        public float TargetAngle;
-        public bool WorldAngle = true;
-        public float Speed = 1;
-        public float MaxSpeed = 360;
-        public HingeJoint2D Joint;
+        public float targetAngle;
+        public bool worldAngle = true;
+        public float speed = 1;
+        public float maxSpeed = 360;
+        public HingeJoint2D joint;
         private Rigidbody2D _jointRigidbody;
 
         private void Awake()
         {
-            if (Joint == null)
-                Joint = GetComponent<HingeJoint2D>();
-            _jointRigidbody = Joint.GetComponent<Rigidbody2D>();
+            if (joint == null)
+                joint = GetComponent<HingeJoint2D>();
+            _jointRigidbody = joint.GetComponent<Rigidbody2D>();
         }
 
         private void Update()
         {
-            var targetAngle = WorldAngle ? TargetAngle : _jointRigidbody.rotation - TargetAngle;
-            var rotTarget = Mathf.DeltaAngle(targetAngle, Joint.connectedBody.rotation);
-            var motor = Joint.motor;
-            motor.motorSpeed = Mathf.Clamp(-rotTarget*Speed, -MaxSpeed, MaxSpeed);
-            Joint.motor = motor;
+            float targetAngle = worldAngle ? this.targetAngle : _jointRigidbody.rotation - this.targetAngle;
+            float rotTarget = Mathf.DeltaAngle(targetAngle, joint.connectedBody.rotation);
+            JointMotor2D motor = joint.motor;
+            motor.motorSpeed = Mathf.Clamp(-rotTarget*speed, -maxSpeed, maxSpeed);
+            joint.motor = motor;
         }
     }
 }

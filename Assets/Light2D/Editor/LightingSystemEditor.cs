@@ -37,26 +37,26 @@ namespace Light2D
 
         void OnEnable()
         {
-            _lightPixelSize = serializedObject.FindProperty("LightPixelSize");
-            _lightCameraSizeAdd = serializedObject.FindProperty("LightCameraSizeAdd");
-            _lightCameraFovAdd = serializedObject.FindProperty("LightCameraFovAdd");
-            _enableAmbientLight = serializedObject.FindProperty("EnableAmbientLight");
-            _blurLightSources = serializedObject.FindProperty("BlurLightSources");
-            _blurAmbientLight = serializedObject.FindProperty("BlurAmbientLight");
-            _hdr = serializedObject.FindProperty("HDR");
-            _lightObstaclesAntialiasing = serializedObject.FindProperty("LightObstaclesAntialiasing");
-            _ambientLightComputeMaterial = serializedObject.FindProperty("AmbientLightComputeMaterial");
-            _lightOverlayMaterial = serializedObject.FindProperty("LightOverlayMaterial");
-            _lightSourcesBlurMaterial = serializedObject.FindProperty("LightSourcesBlurMaterial");
-            _ambientLightBlurMaterial = serializedObject.FindProperty("AmbientLightBlurMaterial");
-            _lightCamera = serializedObject.FindProperty("LightCamera");
-            _lightSourcesLayer = serializedObject.FindProperty("LightSourcesLayer");
-            _ambientLightLayer = serializedObject.FindProperty("AmbientLightLayer");
-            _lightObstaclesLayer = serializedObject.FindProperty("LightObstaclesLayer");
-            _lightObstaclesDistance = serializedObject.FindProperty("LightObstaclesDistance");
-            _lightTexturesFilterMode = serializedObject.FindProperty("LightTexturesFilterMode");
-            _enableNormalMapping = serializedObject.FindProperty("EnableNormalMapping");
-            _affectOnlyThisCamera = serializedObject.FindProperty("AffectOnlyThisCamera");
+            _lightPixelSize = serializedObject.FindProperty("lightPixelSize");
+            _lightCameraSizeAdd = serializedObject.FindProperty("lightCameraSizeAdd");
+            _lightCameraFovAdd = serializedObject.FindProperty("lightCameraFovAdd");
+            _enableAmbientLight = serializedObject.FindProperty("enableAmbientLight");
+            _blurLightSources = serializedObject.FindProperty("blurLightSources");
+            _blurAmbientLight = serializedObject.FindProperty("blurAmbientLight");
+            _hdr = serializedObject.FindProperty("hdr");
+            _lightObstaclesAntialiasing = serializedObject.FindProperty("lightObstaclesAntialiasing");
+            _ambientLightComputeMaterial = serializedObject.FindProperty("lightObstaclesDistance");
+            _lightOverlayMaterial = serializedObject.FindProperty("lightOverlayMaterial");
+            _lightSourcesBlurMaterial = serializedObject.FindProperty("lightSourcesBlurMaterial");
+            _ambientLightBlurMaterial = serializedObject.FindProperty("ambientLightBlurMaterial");
+            _lightCamera = serializedObject.FindProperty("lightCamera");
+            _lightSourcesLayer = serializedObject.FindProperty("lightSourcesLayer");
+            _ambientLightLayer = serializedObject.FindProperty("ambientLightLayer");
+            _lightObstaclesLayer = serializedObject.FindProperty("lightObstaclesLayer");
+            _lightObstaclesDistance = serializedObject.FindProperty("lightObstaclesDistance");
+            _lightTexturesFilterMode = serializedObject.FindProperty("lightTexturesFilterMode");
+            _enableNormalMapping = serializedObject.FindProperty("enableNormalMapping");
+            _affectOnlyThisCamera = serializedObject.FindProperty("affectOnlyThisCamera");
         }
 
         public override void OnInspectorGUI()
@@ -67,8 +67,8 @@ namespace Light2D
             if (Application.isPlaying)
                 GUI.enabled = false;
 
-            var lightingSystem = (LightingSystem)target;
-            var cam = lightingSystem.GetComponent<Camera>();
+            LightingSystem lightingSystem = (LightingSystem)target;
+            Camera cam = lightingSystem.GetComponent<Camera>();
             bool isMobileTarget = EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS ||
                                 EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android;
 
@@ -104,14 +104,14 @@ namespace Light2D
                 }
                 else
                 {
-                    var halfFov = (cam.fieldOfView + _lightCameraFovAdd.floatValue)*Mathf.Deg2Rad/2f;
+                    float halfFov = (cam.fieldOfView + _lightCameraFovAdd.floatValue)*Mathf.Deg2Rad/2f;
                     size = Mathf.Tan(halfFov)*_lightObstaclesDistance.floatValue*2;
                 }
                 if (!Application.isPlaying)
                 {
 
                     int lightTextureHeight = Mathf.RoundToInt(size/_lightPixelSize.floatValue);
-                    var oldSize = lightTextureHeight;
+                    int oldSize = lightTextureHeight;
                     lightTextureHeight = EditorGUILayout.IntField("Light Texture Height", lightTextureHeight);
                     if (lightTextureHeight%2 != 0)
                         lightTextureHeight++;
@@ -174,7 +174,7 @@ namespace Light2D
             if (!_enableAmbientLight.boolValue)
                 GUI.enabled = false;
             EditorGUILayout.PropertyField(_blurAmbientLight, new GUIContent("   Blur Ambient Light"));
-            var oldEnabled = GUI.enabled;
+            bool oldEnabled = GUI.enabled;
             if (!_blurAmbientLight.boolValue)
                 GUI.enabled = false;
             EditorGUILayout.PropertyField(_ambientLightBlurMaterial, new GUIContent("   Ambient Light Blur Material"));

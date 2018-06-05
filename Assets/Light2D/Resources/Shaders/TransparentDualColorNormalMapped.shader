@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 /*
 
 That shader is usually used to draw light obstacles.
@@ -54,7 +56,7 @@ SubShader {
 			v2f vert (appdata_t v)
 			{
 				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.texcoord = v.texcoord0;
 				o.color0 = v.color;
 				o.color1 = float4(EncodeFloatRGBA(v.texcoord1.x).xyz, EncodeFloatRGBA(v.texcoord1.y).x);

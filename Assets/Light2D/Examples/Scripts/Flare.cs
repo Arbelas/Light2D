@@ -8,16 +8,16 @@ namespace Light2D.Examples
 {
     public class Flare : MonoBehaviour
     {
-        public float Lifetime;
-        public LightSprite Light;
-        public float AlphaGrowTime = 0.5f;
+        public float lifetime;
+        public LightSprite light;
+        public float alphaGrowTime = 0.5f;
         private float _lifetimeElapsed = 0;
         private Color _startColor;
 
         void Start()
         {
-            _startColor = Light.Color;
-            Light.Color = _startColor.WithAlpha(0);
+            _startColor = light.color;
+            light.color = _startColor.WithAlpha(0);
         }
 
         void Update()
@@ -26,15 +26,15 @@ namespace Light2D.Examples
 
             
 
-            if (_lifetimeElapsed > Lifetime)
+            if (_lifetimeElapsed > lifetime)
             {
-                _lifetimeElapsed = Lifetime;
+                _lifetimeElapsed = lifetime;
                 Destroy(gameObject);
             }
 
 
-            var alpha = Mathf.Lerp(0, _startColor.a, Mathf.Min(_lifetimeElapsed, AlphaGrowTime)/AlphaGrowTime);
-            Light.Color = Color.Lerp(_startColor.WithAlpha(alpha), _startColor.WithAlpha(0), _lifetimeElapsed/Lifetime);
+            float alpha = Mathf.Lerp(0, _startColor.a, Mathf.Min(_lifetimeElapsed, alphaGrowTime)/alphaGrowTime);
+            light.color = Color.Lerp(_startColor.WithAlpha(alpha), _startColor.WithAlpha(0), _lifetimeElapsed/lifetime);
         }
     }
 }

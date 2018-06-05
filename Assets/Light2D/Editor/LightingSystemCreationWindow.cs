@@ -15,11 +15,11 @@ namespace Light2D
 
         public static void CreateWindow()
         {
-            var window = GetWindow<LightingSystemCreationWindow>("Lighting system creation window");
+            LightingSystemCreationWindow window = GetWindow<LightingSystemCreationWindow>("Lighting system creation window");
             window.position = new Rect(200, 200, 500, 140);
         }
 
-        void OnGUI()
+        void OnGui()
         {
             if (FindObjectOfType<LightingSystem>())
             {
@@ -33,33 +33,33 @@ namespace Light2D
 
             if (GUILayout.Button("Create"))
             {
-                var mainCamera = Camera.main;
-                var lighingSystem = mainCamera.GetComponent<LightingSystem>() ?? mainCamera.gameObject.AddComponent<LightingSystem>();
+                Camera mainCamera = Camera.main;
+                LightingSystem lighingSystem = mainCamera.GetComponent<LightingSystem>() ?? mainCamera.gameObject.AddComponent<LightingSystem>();
 
-                var prefab = Resources.Load<GameObject>("Lighting Camera");
-                var lightingSystemObj = (GameObject)Instantiate(prefab);
+                GameObject prefab = Resources.Load<GameObject>("Lighting Camera");
+                GameObject lightingSystemObj = (GameObject)Instantiate(prefab);
                 lightingSystemObj.name = lightingSystemObj.name.Replace("(Clone)", "");
                 lightingSystemObj.transform.parent = mainCamera.transform;
                 lightingSystemObj.transform.localPosition = Vector3.zero;
                 lightingSystemObj.transform.localScale = Vector3.one;
                 lightingSystemObj.transform.localRotation = Quaternion.identity;
 
-                var config = lightingSystemObj.GetComponent<LightingSystemPrefabConfig>();
+                LightingSystemPrefabConfig config = lightingSystemObj.GetComponent<LightingSystemPrefabConfig>();
 
-                lighingSystem.LightCamera = lightingSystemObj.GetComponent<Camera>();
-                lighingSystem.AmbientLightComputeMaterial = config.AmbientLightComputeMaterial;
-                lighingSystem.LightOverlayMaterial = config.LightOverlayMaterial;
-                lighingSystem.AmbientLightBlurMaterial = lighingSystem.LightSourcesBlurMaterial = config.BlurMaterial;
+                lighingSystem.lightCamera = lightingSystemObj.GetComponent<Camera>();
+                lighingSystem.ambientLightComputeMaterial = config.ambientLightComputeMaterial;
+                lighingSystem.lightOverlayMaterial = config.lightOverlayMaterial;
+                lighingSystem.ambientLightBlurMaterial = lighingSystem.lightSourcesBlurMaterial = config.blurMaterial;
 
                 DestroyImmediate(config);
 
-                lighingSystem.LightCamera.depth = mainCamera.depth - 1;
+                lighingSystem.lightCamera.depth = mainCamera.depth - 1;
 
-                lighingSystem.LightCamera.cullingMask = 1 << _lightSourcesLayer;
+                lighingSystem.lightCamera.cullingMask = 1 << _lightSourcesLayer;
 
-                lighingSystem.LightSourcesLayer = _lightSourcesLayer;
-                lighingSystem.AmbientLightLayer = _ambientLightLayer;
-                lighingSystem.LightObstaclesLayer = _lightObstaclesLayer;
+                lighingSystem.lightSourcesLayer = _lightSourcesLayer;
+                lighingSystem.ambientLightLayer = _ambientLightLayer;
+                lighingSystem.lightObstaclesLayer = _lightObstaclesLayer;
 
                 mainCamera.cullingMask &=
                     ~((1 << _lightSourcesLayer) | (1 << _ambientLightLayer) | (1 << _lightObstaclesLayer));

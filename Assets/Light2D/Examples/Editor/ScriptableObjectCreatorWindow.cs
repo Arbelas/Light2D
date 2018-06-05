@@ -7,42 +7,34 @@ using UnityEditor;
 using UnityEngine;
 
 
-internal class ScriptableObjectCreatorWindow : EditorWindow
-{
+internal class ScriptableObjectCreatorWindow : EditorWindow {
     private string _className = "";
 
-    // Add menu named "My Window" to the Window menu
+    // Add menu named "My Window" to the Window menulighting
     [MenuItem("Window/Scriptable Object Creator")]
-    private static void Init()
-    {
+    private static void Init() {
         // Get existing open window or if none, make a new one:
-        var window = (ScriptableObjectCreatorWindow) EditorWindow.GetWindow(typeof (ScriptableObjectCreatorWindow));
+        ScriptableObjectCreatorWindow window = (ScriptableObjectCreatorWindow)GetWindow(typeof(ScriptableObjectCreatorWindow));
     }
 
-    private void OnGUI()
-    {
+    private void OnGui() {
         _className = EditorGUILayout.TextField("Class Name", _className);
 
-        if (GUILayout.Button("Create"))
-        {
+        if (GUILayout.Button("Create")) {
             CreateAsset(_className);
         }
     }
-    
+
     /// <summary>
-    //	This makes it easy to create, name and place unique new ScriptableObject asset files.
+    ///	This makes it easy to create, name and place unique new ScriptableObject asset files.
     /// </summary>
-    public static void CreateAsset(string type) 
-    {
-        var asset = ScriptableObject.CreateInstance(type);
+    public static void CreateAsset(string type) {
+        ScriptableObject asset = CreateInstance(type);
 
         string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        if (path == "")
-        {
+        if (path == "") {
             path = "Assets";
-        }
-        else if (Path.GetExtension(path) != "")
-        {
+        } else if (Path.GetExtension(path) != "") {
             path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
         }
 

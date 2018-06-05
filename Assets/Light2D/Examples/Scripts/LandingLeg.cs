@@ -9,20 +9,20 @@ namespace Light2D.Examples
 {
     public class LandingLeg : MonoBehaviour
     {
-        public bool Release = false;
-        public float ReleasedAngle;
-        public float HiddenAngle;
-        public HingeAutoRotator AutoRotator;
+        public bool release = false;
+        public float releasedAngle;
+        public float hiddenAngle;
+        public HingeAutoRotator autoRotator;
 
         public void Start()
         {
-            if (AutoRotator == null)
-                AutoRotator = GetComponent<HingeAutoRotator>();
+            if (autoRotator == null)
+                autoRotator = GetComponent<HingeAutoRotator>();
         }
 
         private void Update()
         {
-            AutoRotator.TargetAngle = Release ? ReleasedAngle : HiddenAngle;
+            autoRotator.targetAngle = release ? releasedAngle : hiddenAngle;
         }
     }
 }

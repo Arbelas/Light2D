@@ -8,12 +8,12 @@ namespace Light2D.Examples
 {
     public class Wisp : MonoBehaviour
     {
-        public float Force;
-        public GameObject LineLight;
+        public float force;
+        public GameObject lineLight;
 
         void Update()
         {
-            var moveVec = Vector2.zero;
+            Vector2 moveVec = Vector2.zero;
 
             if (Input.GetKey(KeyCode.UpArrow)) moveVec += new Vector2(0, 1);
             if (Input.GetKey(KeyCode.DownArrow)) moveVec += new Vector2(0, -1);
@@ -22,12 +22,12 @@ namespace Light2D.Examples
 
             if (moveVec.sqrMagnitude > 0.01f*0.01f)
             {
-                var force = moveVec.normalized*Force;
+                Vector2 force = moveVec.normalized*this.force;
                 GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Force);
             }
 
-            var lightAngle = (Util.GetMousePosInUnits() - (Vector2) transform.position).AngleZ();
-            LineLight.transform.rotation = Quaternion.Euler(0, 0, lightAngle);
+            float lightAngle = (Util.GetMousePosInUnits() - (Vector2) transform.position).AngleZ();
+            lineLight.transform.rotation = Quaternion.Euler(0, 0, lightAngle);
         }
     }
 }

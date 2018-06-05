@@ -6,18 +6,18 @@ namespace Light2D.Examples
 {
     public class Spacecraft : MonoBehaviour
     {
-        public bool ReleaseLandingGear = false;
-        public RocketEngine BottomLeftEngine;
-        public RocketEngine BottomRightEngine;
-        public RocketEngine SideLeftEngine;
-        public RocketEngine SideRightEngine;
-        public RocketEngine ReverseLeftEngine;
-        public RocketEngine ReverseRightEngine;
-        public Rigidbody2D MainRigidbody;
-        public GameObject FlaresPrefab;
-        public Vector2 RightFlareSpawnPos = new Vector3(1.87f, -0.28f, 0);
-        public Vector2 RightFlareVelocity;
-        public float FlareAngularVelocity;
+        public bool releaseLandingGear = false;
+        public RocketEngine bottomLeftEngine;
+        public RocketEngine bottomRightEngine;
+        public RocketEngine sideLeftEngine;
+        public RocketEngine sideRightEngine;
+        public RocketEngine reverseLeftEngine;
+        public RocketEngine reverseRightEngine;
+        public Rigidbody2D mainRigidbody;
+        public GameObject flaresPrefab;
+        public Vector2 rightFlareSpawnPos = new Vector3(1.87f, -0.28f, 0);
+        public Vector2 rightFlareVelocity;
+        public float flareAngularVelocity;
         private LandingLeg[] _landingLegs;
 
         private void Awake()
@@ -33,10 +33,10 @@ namespace Light2D.Examples
 
         private void FixCollision()
         {
-            var colliders = GetComponentsInChildren<Collider2D>();
-            foreach (var coll1 in colliders)
+            Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+            foreach (Collider2D coll1 in colliders)
             {
-                foreach (var coll2 in colliders)
+                foreach (Collider2D coll2 in colliders)
                 {
                     if (coll1 != coll2)
                         Physics2D.IgnoreCollision(coll1, coll2);
@@ -46,16 +46,16 @@ namespace Light2D.Examples
 
         private void BalanceCenterOfMass()
         {
-            var rigidbodies = GetComponentsInChildren<Rigidbody2D>();
-            var groups = rigidbodies
+            Rigidbody2D[] rigidbodies = GetComponentsInChildren<Rigidbody2D>();
+            IGrouping<string, Rigidbody2D>[] groups = rigidbodies
                 .GroupBy(rb => rb.name.Replace("Left", "").Replace("Right", ""))
                 .ToArray();
-            foreach (var group in groups)
+            foreach (IGrouping<string, Rigidbody2D> group in groups)
             {
-                var mainCenterOfMass = transform.InverseTransformPoint(group.First().worldCenterOfMass);
-                foreach (var rb in group)
+                Vector3 mainCenterOfMass = transform.InverseTransformPoint(group.First().worldCenterOfMass);
+                foreach (Rigidbody2D rb in group)
                 {
-                    var cm = transform.InverseTransformPoint(rb.worldCenterOfMass);
+                    Vector3 cm = transform.InverseTransformPoint(rb.worldCenterOfMass);
                     if (Mathf.Abs(mainCenterOfMass.x + cm.x) < 0.02f && Mathf.Abs(cm.y - mainCenterOfMass.y) < 0.02f)
                     {
                         cm.x = -mainCenterOfMass.x;
@@ -68,33 +68,33 @@ namespace Light2D.Examples
 
         private void Update()
         {
-            SetLandingGear(ReleaseLandingGear);
+            SetLandingGear(releaseLandingGear);
         }
 
         private void SetLandingGear(bool release)
         {
-            foreach (var landingLeg in _landingLegs)
-                landingLeg.Release = release;
+            foreach (LandingLeg landingLeg in _landingLegs)
+                landingLeg.release = release;
         }
 
         public void DropFlares()
         {
-            SpawnFlare(RightFlareSpawnPos, RightFlareVelocity);
-            SpawnFlare(new Vector3(-RightFlareSpawnPos.x, RightFlareSpawnPos.y),
-                new Vector2(-RightFlareVelocity.x, RightFlareVelocity.y));
+            SpawnFlare(rightFlareSpawnPos, rightFlareVelocity);
+            SpawnFlare(new Vector3(-rightFlareSpawnPos.x, rightFlareSpawnPos.y),
+                new Vector2(-rightFlareVelocity.x, rightFlareVelocity.y));
         }
 
         void SpawnFlare(Vector2 localPos, Vector2 localVelocity)
         {
-            var worldPos = MainRigidbody.transform.TransformPoint(localPos);
-            var worldVel = (Vector2)MainRigidbody.transform.TransformDirection(localVelocity) + MainRigidbody.velocity;
-            var worldRot = Quaternion.Euler(0, 0,
-                FlaresPrefab.transform.rotation.eulerAngles.z*Mathf.Sign(localVelocity.x) +
-                MainRigidbody.rotation);
-            var flareObj = (GameObject)Instantiate(FlaresPrefab, worldPos, worldRot);
-            var flareRigidbody = flareObj.GetComponent<Rigidbody2D>();
+            Vector3 worldPos = mainRigidbody.transform.TransformPoint(localPos);
+            Vector2 worldVel = (Vector2)mainRigidbody.transform.TransformDirection(localVelocity) + mainRigidbody.velocity;
+            Quaternion worldRot = Quaternion.Euler(0, 0,
+                flaresPrefab.transform.rotation.eulerAngles.z*Mathf.Sign(localVelocity.x) +
+                mainRigidbody.rotation);
+            GameObject flareObj = Instantiate(flaresPrefab, worldPos, worldRot);
+            Rigidbody2D flareRigidbody = flareObj.GetComponent<Rigidbody2D>();
             flareRigidbody.velocity = worldVel;
-            flareRigidbody.angularVelocity = FlareAngularVelocity*Mathf.Sign(localVelocity.x);
+            flareRigidbody.angularVelocity = flareAngularVelocity*Mathf.Sign(localVelocity.x);
         }
     }
 }

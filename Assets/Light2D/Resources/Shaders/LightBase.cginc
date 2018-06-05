@@ -1,4 +1,7 @@
-﻿/*
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+/*
 
 Base code for standard light shaders.
 Light is computed by path tracking with fixed number of steps (PATH_TRACKING_SAMPLES).
@@ -45,13 +48,13 @@ uniform half2 _PosOffset;
 light2d_fixed_v2f light2d_fixed_vert (light2d_fixed_data_t v)
 {
 	light2d_fixed_v2f o;
-	o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+	o.vertex = UnityObjectToClipPos(v.vertex);
 	o.texcoord = v.texcoord;
 
 	#ifdef PERSPECTIVE_CAMERA
 	o.texcoord1 = v.texcoord1;
 	o.projVertex = o.vertex;
-	o.zDistance = mul(_Object2World, v.vertex).z;
+	o.zDistance = mul(unity_ObjectToWorld, v.vertex).z;
 	#else
 	float4 vPos = ComputeScreenPos(o.vertex);
 	o.thisPos = (vPos.xy/vPos.w - 0.5)*_ExtendedToSmallTextureScale + 0.5;

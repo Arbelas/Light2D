@@ -12,8 +12,8 @@ namespace Light2D.Examples
         {
             if (targets.Length == 1)
             {
-                var myScript = (HingeAutoRotator) target;
-                var connBody = myScript.Joint == null ? null : myScript.Joint.connectedBody;
+                HingeAutoRotator myScript = (HingeAutoRotator) target;
+                Rigidbody2D connBody = myScript.joint == null ? null : myScript.joint.connectedBody;
 
                 GUI.enabled = false;
                 EditorGUILayout.ObjectField("Connected body", connBody, typeof (Rigidbody2D), true);

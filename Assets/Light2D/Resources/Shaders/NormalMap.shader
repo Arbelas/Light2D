@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 /*
 
 Used to create normal map buffer.
@@ -53,11 +56,11 @@ SubShader {
 			v2f vert (appdata_t v)
 			{
 				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.mainTexcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
 				o.normalTexcoord = TRANSFORM_TEX(v.texcoord, _NormalTex);
-				o.utangent = normalize(mul((float3x3)_Object2World, half3(v.tangent.x, v.tangent.y, 0)));
-				o.vtangent = normalize(mul((float3x3)_Object2World, half3(v.tangent.y, -v.tangent.x, 0)));
+				o.utangent = normalize(mul((float3x3)unity_ObjectToWorld, half3(v.tangent.x, v.tangent.y, 0)));
+				o.vtangent = normalize(mul((float3x3)unity_ObjectToWorld, half3(v.tangent.y, -v.tangent.x, 0)));
 				return o;
 			}
 			

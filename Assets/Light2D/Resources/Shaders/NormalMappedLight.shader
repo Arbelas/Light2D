@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 /*
 
 Used to create normal map buffer.
@@ -38,7 +40,7 @@ SubShader {
 			v2f vert (appdata_t v)
 			{
 				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.normalTexcoord = o.vertex*0.5 + 0.5;
 				o.lightTexcoord = o.vertex*0.5 + 0.5;
 				o.lightPos = mul(UNITY_MATRIX_VP, half4(_LightPos.xy, 0, 1));

@@ -18,16 +18,16 @@ namespace Light2D.Examples
         [Serializable]
         public class BlockInfo
         {
-            public string Name;
-            public float MinNoise;
-            public float MaxNoise;
-            public BlockType BlockType;
-            public int Weight = 1;
-            public Color LightEmission = new Color(0, 0, 0, 0);
-            public Color LightAbsorption = new Color(0, 0, 0, 0);
-            public float AditionalObjectProbability;
-            public GameObject AditionalObjectPrefab;
-            public Sprite[] SpriteInfo = new Sprite[0];
+            public string name;
+            public float minNoise;
+            public float maxNoise;
+            public BlockType blockType;
+            public int weight = 1;
+            public Color lightEmission = new Color(0, 0, 0, 0);
+            public Color lightAbsorption = new Color(0, 0, 0, 0);
+            public float aditionalObjectProbability;
+            public GameObject aditionalObjectPrefab;
+            public Sprite[] spriteInfo = new Sprite[0];
         }
 
         //[Serializable]
@@ -42,10 +42,10 @@ namespace Light2D.Examples
         //    }
         //}
 
-        public float FirstNoiseScale = 0.02f;
-        public float SecondNoiseScale = 0.2f;
-        public float SecondNoiseMul = 0.075f;
-        public List<BlockInfo> BlockInfos = new List<BlockInfo>();
+        public float firstNoiseScale = 0.02f;
+        public float secondNoiseScale = 0.2f;
+        public float secondNoiseMul = 0.075f;
+        public List<BlockInfo> blockInfos = new List<BlockInfo>();
 
         //[ContextMenu("Fix sprite infos")]
         //private void FixSpriteInfos()

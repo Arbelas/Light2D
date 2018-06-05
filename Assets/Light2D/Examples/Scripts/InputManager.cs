@@ -12,17 +12,17 @@ namespace Light2D.Examples
 {
     public class InputManager : MonoBehaviour
     {
-        public Spacecraft ControlledSpacecraft;
-        public GameObject TouchControls;
-        public ButtonHelper UpButton, DownButton, LeftButton, RightButton;
+        public Spacecraft controlledSpacecraft;
+        public GameObject touchControls;
+        public ButtonHelper upButton, downButton, leftButton, rightButton;
 
         private IEnumerator Start()
         {
-            TouchControls.SetActive(Input.touchSupported);
+            touchControls.SetActive(Input.touchSupported);
 
-            ControlledSpacecraft.MainRigidbody.isKinematic = true;
+            controlledSpacecraft.mainRigidbody.isKinematic = true;
             yield return new WaitForSeconds(1);
-            ControlledSpacecraft.MainRigidbody.isKinematic = false;
+            controlledSpacecraft.mainRigidbody.isKinematic = false;
         }
 
         private void Update()
@@ -34,40 +34,40 @@ namespace Light2D.Examples
                 Application.LoadLevel(0);
 
             if(Input.GetKeyDown(KeyCode.C))
-                ControlledSpacecraft.DropFlares();
+                controlledSpacecraft.DropFlares();
 
-            ControlledSpacecraft.BottomLeftEngine.ForcePercent = 0;
-            ControlledSpacecraft.BottomRightEngine.ForcePercent = 0;
-            ControlledSpacecraft.SideRightEngine.ForcePercent = 0;
-            ControlledSpacecraft.SideLeftEngine.ForcePercent = 0;
+            controlledSpacecraft.bottomLeftEngine.forcePercent = 0;
+            controlledSpacecraft.bottomRightEngine.forcePercent = 0;
+            controlledSpacecraft.sideRightEngine.forcePercent = 0;
+            controlledSpacecraft.sideLeftEngine.forcePercent = 0;
 
-            var moveDir = Vector2.zero;
-            if (Input.GetKey(KeyCode.UpArrow) || UpButton.IsPressed) moveDir += new Vector2(0, 1);
-            if (Input.GetKey(KeyCode.DownArrow) || DownButton.IsPressed) moveDir += new Vector2(0, -1);
-            if (Input.GetKey(KeyCode.RightArrow) || RightButton.IsPressed) moveDir += new Vector2(1, 0);
-            if (Input.GetKey(KeyCode.LeftArrow) || LeftButton.IsPressed) moveDir += new Vector2(-1, 0);
+            Vector2 moveDir = Vector2.zero;
+            if (Input.GetKey(KeyCode.UpArrow) || upButton.IsPressed) moveDir += new Vector2(0, 1);
+            if (Input.GetKey(KeyCode.DownArrow) || downButton.IsPressed) moveDir += new Vector2(0, -1);
+            if (Input.GetKey(KeyCode.RightArrow) || rightButton.IsPressed) moveDir += new Vector2(1, 0);
+            if (Input.GetKey(KeyCode.LeftArrow) || leftButton.IsPressed) moveDir += new Vector2(-1, 0);
 
-            ControlledSpacecraft.BottomLeftEngine.ForcePercent = moveDir.y*2f + moveDir.x;
-            ControlledSpacecraft.BottomRightEngine.ForcePercent = moveDir.y*2f - moveDir.x;
-            ControlledSpacecraft.SideLeftEngine.ForcePercent = moveDir.x;
-            ControlledSpacecraft.SideRightEngine.ForcePercent = -moveDir.x;
-            ControlledSpacecraft.ReverseLeftEngine.ForcePercent = -moveDir.y - moveDir.x*2f;
-            ControlledSpacecraft.ReverseRightEngine.ForcePercent = -moveDir.y + moveDir.x*2f;
+            controlledSpacecraft.bottomLeftEngine.forcePercent = moveDir.y*2f + moveDir.x;
+            controlledSpacecraft.bottomRightEngine.forcePercent = moveDir.y*2f - moveDir.x;
+            controlledSpacecraft.sideLeftEngine.forcePercent = moveDir.x;
+            controlledSpacecraft.sideRightEngine.forcePercent = -moveDir.x;
+            controlledSpacecraft.reverseLeftEngine.forcePercent = -moveDir.y - moveDir.x*2f;
+            controlledSpacecraft.reverseRightEngine.forcePercent = -moveDir.y + moveDir.x*2f;
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                ControlledSpacecraft.ReleaseLandingGear ^= true;
+                controlledSpacecraft.releaseLandingGear ^= true;
             }
         }
 
         public void LegsClick()
         {
-            ControlledSpacecraft.ReleaseLandingGear ^= true;
+            controlledSpacecraft.releaseLandingGear ^= true;
         }
 
         public void FlareClick()
         {
-            ControlledSpacecraft.DropFlares();
+            controlledSpacecraft.DropFlares();
         }
 
         public void Restart()

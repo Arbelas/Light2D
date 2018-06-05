@@ -13,14 +13,14 @@ namespace Light2D.Examples
     /// Written by John D. Cook 
     /// http://www.johndcook.com
     /// </summary>
-    public class SimpleRNG
+    public class SimpleRng
     {
         public uint w;
         public uint z;
 
-        public ulong longSeed
+        public ulong LongSeed
         {
-            get { return ((ulong) w << 32) + (ulong) z; }
+            get { return ((ulong) w << 32) + z; }
             set
             {
                 w = (uint) (value >> 32);
@@ -28,17 +28,17 @@ namespace Light2D.Examples
             }
         }
 
-        public int seed
+        public int Seed
         {
             set { w = unchecked ((uint) value); }
         }
 
-        public float value
+        public float Value
         {
             get { return GetUniformF(); }
         }
 
-        public SimpleRNG()
+        public SimpleRng()
         {
             // These values are not magical, just the default values Marsaglia used.
             // Any pair of unsigned integers should be fine.
@@ -51,26 +51,26 @@ namespace Light2D.Examples
         // 2) specifying one non-zero unsigned integer and taking a default value for the second
         // 3) setting the seed from the system time
 
-        public SimpleRNG(uint u, uint v) : this()
+        public SimpleRng(uint u, uint v) : this()
         {
             if (u != 0) w = u;
             if (v != 0) z = v;
         }
 
-        public SimpleRNG(uint u) : this()
+        public SimpleRng(uint u) : this()
         {
             w = u;
         }
 
-        public SimpleRNG(int u) : this((uint) u)
+        public SimpleRng(int u) : this((uint) u)
         {
         }
 
-        public static SimpleRNG FromSystemTime()
+        public static SimpleRng FromSystemTime()
         {
-            System.DateTime dt = System.DateTime.Now;
+            DateTime dt = DateTime.Now;
             long x = dt.ToFileTime();
-            return new SimpleRNG((uint) (x >> 16), (uint) (x%4294967296));
+            return new SimpleRng((uint) (x >> 16), (uint) (x%4294967296));
         }
 
         // Produce a uniform random sample from the open interval (0, 1).
@@ -96,7 +96,7 @@ namespace Light2D.Examples
 
         public int Range(int maxValue)
         {
-            var num = (int) GetUint();
+            int num = (int) GetUint();
             if (num < 0) num = -num;
             return num%maxValue;
         }
@@ -276,13 +276,13 @@ namespace Light2D.Examples
         }
     }
 
-    public static class SimpleRNGUtils
+    public static class SimpleRngUtils
     {
-        public static T RandomElement<T>(this IEnumerable<T> enumerable, Func<T, int> weightFunc, SimpleRNG rand)
+        public static T RandomElement<T>(this IEnumerable<T> enumerable, Func<T, int> weightFunc, SimpleRng rand)
         {
             int totalWeight = 0; // this stores sum of weights of all elements before current
             T selected = default(T); // currently selected element
-            foreach (var data in enumerable)
+            foreach (T data in enumerable)
             {
                 int weight = weightFunc(data); // weight of current element
                 int r = rand.Range(0, totalWeight + weight); // random value

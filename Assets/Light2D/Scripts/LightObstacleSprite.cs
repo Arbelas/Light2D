@@ -8,89 +8,77 @@ using UnityEditor;
 #endif
 using UnityEngine;
 
-namespace Light2D
-{
+namespace Light2D {
     /// <summary>
     /// Sprite with dual color support. Grabs sprite from GameSpriteRenderer field.
     /// </summary>
     [ExecuteInEditMode]
-    public class LightObstacleSprite : CustomSprite
-    {
+    public class LightObstacleSprite : CustomSprite {
         /// <summary>
         /// Renderer from which sprite will be used.
         /// </summary>
-        public Renderer GameSpriteRenderer;
+        public Renderer gameSpriteRenderer;
 
         /// <summary>
         /// Color is packed in mesh UV1.
         /// </summary>
-        public Color AdditiveColor;
+        public Color additiveColor;
         private Color _oldSecondaryColor;
         private Renderer _oldGameSpriteRenderer;
         private SpriteRenderer _oldUnitySprite;
         private CustomSprite _oldCustomSprite;
 
-        protected override void OnEnable()
-        {
+        protected override void OnEnable() {
 #if UNITY_EDITOR
-            if (Material == null)
-            {
-                Material = (Material)AssetDatabase.LoadAssetAtPath("Assets/Light2D/Materials/DualColor.mat", typeof(Material));
+            if (material == null) {
+                material = (Material)AssetDatabase.LoadAssetAtPath("Assets/Light2D/Materials/DualColor.mat", typeof(Material));
             }
 #endif
 
             base.OnEnable();
 
-            if (GameSpriteRenderer == null && transform.parent != null)
-                GameSpriteRenderer = transform.parent.gameObject.GetComponent<Renderer>();
+            if (gameSpriteRenderer == null && transform.parent != null)
+                gameSpriteRenderer = transform.parent.gameObject.GetComponent<Renderer>();
 
-            gameObject.layer = LightingSystem.Instance.LightObstaclesLayer;
+            gameObject.layer = LightingSystem.Instance.lightObstaclesLayer;
 
             UpdateMeshData(true);
         }
 
-        private void UpdateSecondaryColor()
-        {
-            var uv1 = new Vector2(
-                Util.DecodeFloatRGBA((Vector4)AdditiveColor),
-                Util.DecodeFloatRGBA(new Vector4(AdditiveColor.a, 0, 0)));
-            for (int i = 0; i < _uv1.Length; i++)
-            {
-                _uv1[i] = uv1;
+        private void UpdateSecondaryColor() {
+            Vector2 uv1 = new Vector2(
+                Util.DecodeFloatRgba((Vector4)additiveColor),
+                Util.DecodeFloatRgba(new Vector4(additiveColor.a, 0, 0)));
+            for (int i = 0; i < this.uv1.Length; i++) {
+                this.uv1[i] = uv1;
             }
         }
 
-        protected override void UpdateMeshData(bool forceUpdate = false)
-        {
-            if (_meshRenderer == null || _meshFilter == null || IsPartOfStaticBatch)
+        protected override void UpdateMeshData(bool forceUpdate = false) {
+            if (meshRenderer == null || meshFilter == null || IsPartOfStaticBatch)
                 return;
 
-            if (GameSpriteRenderer != null && (GameSpriteRenderer != _oldGameSpriteRenderer || forceUpdate ||
-                (_oldUnitySprite != null && _oldUnitySprite.sprite != null && _oldUnitySprite.sprite != Sprite) ||
-                (_oldCustomSprite != null && _oldCustomSprite.Sprite != null && _oldCustomSprite.Sprite != Sprite)))
-            {
-                _oldGameSpriteRenderer = GameSpriteRenderer;
+            if (gameSpriteRenderer != null && (gameSpriteRenderer != _oldGameSpriteRenderer || forceUpdate ||
+                (_oldUnitySprite != null && _oldUnitySprite.sprite != null && _oldUnitySprite.sprite != sprite) ||
+                (_oldCustomSprite != null && _oldCustomSprite.sprite != null && _oldCustomSprite.sprite != sprite))) {
+                _oldGameSpriteRenderer = gameSpriteRenderer;
 
-                _oldCustomSprite = GameSpriteRenderer.GetComponent<CustomSprite>();
-                if (_oldCustomSprite != null)
-                {
-                    Sprite = _oldCustomSprite.Sprite;
-                }
-                else
-                {
-                    _oldUnitySprite = GameSpriteRenderer.GetComponent<SpriteRenderer>();
+                _oldCustomSprite = gameSpriteRenderer.GetComponent<CustomSprite>();
+                if (_oldCustomSprite != null) {
+                    sprite = _oldCustomSprite.sprite;
+                } else {
+                    _oldUnitySprite = gameSpriteRenderer.GetComponent<SpriteRenderer>();
                     if (_oldUnitySprite != null)
-                        Sprite = _oldUnitySprite.sprite;
+                        sprite = _oldUnitySprite.sprite;
                 }
 
-                Material.EnableKeyword("NORMAL_TEXCOORD");
+                material.EnableKeyword("NORMAL_TEXCOORD");
             }
 
-            if (_oldSecondaryColor != AdditiveColor || forceUpdate)
-            {
+            if (_oldSecondaryColor != additiveColor || forceUpdate) {
                 UpdateSecondaryColor();
-                _isMeshDirty = true;
-                _oldSecondaryColor = AdditiveColor;
+                isMeshDirty = true;
+                _oldSecondaryColor = additiveColor;
             }
 
             base.UpdateMeshData(forceUpdate);

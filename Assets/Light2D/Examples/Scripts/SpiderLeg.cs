@@ -9,14 +9,14 @@ namespace Light2D.Examples
 {
     public class SpiderLeg : MonoBehaviour
     {
-        public Rigidbody2D Body;
-        public Transform ConnectedTransform;
-        public Vector2 ConnectedAnchor;
-        public float MaxForce = 5000;
-        public float MaxMoveSpeed = 10;
-        public float TargetLength = 10;
-        public float Spring = 100;
-        public float Damper = 10;
+        public Rigidbody2D body;
+        public Transform connectedTransform;
+        public Vector2 connectedAnchor;
+        public float maxForce = 5000;
+        public float maxMoveSpeed = 10;
+        public float targetLength = 10;
+        public float spring = 100;
+        public float damper = 10;
         private Transform _transform;
 
         private void Awake()
@@ -26,12 +26,12 @@ namespace Light2D.Examples
 
         private void LateUpdate()
         {
-            if (ConnectedTransform == null || Body == null)
+            if (connectedTransform == null || body == null)
                 return;
 
-            Vector2 worldAnchor = ConnectedTransform.TransformPoint(ConnectedAnchor);
-            Vector2 worldOrigin = Body.position;
-            var length = (worldAnchor - worldOrigin).magnitude;
+            Vector2 worldAnchor = connectedTransform.TransformPoint(connectedAnchor);
+            Vector2 worldOrigin = body.position;
+            float length = (worldAnchor - worldOrigin).magnitude;
 
             _transform.position = worldOrigin;
             _transform.localScale = transform.localScale.WithY(length);
@@ -40,28 +40,28 @@ namespace Light2D.Examples
 
         private void FixedUpdate()
         {
-            if (ConnectedTransform == null || Body == null)
+            if (connectedTransform == null || body == null)
                 return;
 
-            Vector2 worldAnchor = ConnectedTransform.TransformPoint(ConnectedAnchor);
-            Vector2 worldOrigin = Body.position;
+            Vector2 worldAnchor = connectedTransform.TransformPoint(connectedAnchor);
+            Vector2 worldOrigin = body.position;
 
-            var length = (worldAnchor - worldOrigin).magnitude;
-            var force = (TargetLength - length)*Spring;
-            force -= Body.velocity.magnitude*Damper*Mathf.Sign(force);
-            force = Mathf.Clamp(force, -MaxForce, MaxForce);
-            var forceVec = (Body.position - worldAnchor)/length*force;
+            float length = (worldAnchor - worldOrigin).magnitude;
+            float force = (targetLength - length)*spring;
+            force -= body.velocity.magnitude*damper*Mathf.Sign(force);
+            force = Mathf.Clamp(force, -maxForce, maxForce);
+            Vector2 forceVec = (body.position - worldAnchor)/length*force;
 
-            Body.AddForce(forceVec, ForceMode2D.Force);
+            body.AddForce(forceVec, ForceMode2D.Force);
         }
 
         private void OnDrawGizmos()
         {
-            if (ConnectedTransform == null || Body == null)
+            if (connectedTransform == null || body == null)
                 return;
 
-            Vector2 worldAnchor = ConnectedTransform.TransformPoint(ConnectedAnchor);
-            Vector2 worldOrigin = Body.position;
+            Vector2 worldAnchor = connectedTransform.TransformPoint(connectedAnchor);
+            Vector2 worldOrigin = body.position;
 
             Gizmos.DrawLine(worldAnchor, worldOrigin);
         }

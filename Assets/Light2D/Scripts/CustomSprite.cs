@@ -1,257 +1,227 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
-namespace Light2D
-{
+namespace Light2D {
+
     /// <summary>
-    /// Custom sprite wich uses MeshFilter and MeshRenderer to render.
-    /// Main improvement from Unity SpriteRenderer is that you can access and modify mesh.
-    /// Also multiple CustomSprites could be merged to single mesh with MeshCombiner,
-    /// which gives much better performance for small meshes than StaticBatchingUtility.Combine.
+    ///     Custom sprite wich uses MeshFilter and MeshRenderer to render.
+    ///     Main improvement from Unity SpriteRenderer is that you can access and modify mesh.
+    ///     Also multiple CustomSprites could be merged to single mesh with MeshCombiner,
+    ///     which gives much better performance for small meshes than StaticBatchingUtility.Combine.
     /// </summary>
     [ExecuteInEditMode]
-    public class CustomSprite : MonoBehaviour
-    {
-        /// <summary>
-        /// Vertex color of mesh.
-        /// </summary>
-        public Color Color = Color.white;
-
-        /// <summary>
-        /// Sprite from which mesh will be generated.
-        /// </summary>
-        public Sprite Sprite;
-
-        /// <summary>
-        /// Sorting order of MeshRenderer.
-        /// </summary>
-        public int SortingOrder;
-
-        /// <summary>
-        /// Material to be used.
-        /// </summary>
-        public Material Material;
-
-        // mesh data
-        protected Color[] _colors;
-        protected Vector2[] _uv0;
-        protected Vector2[] _uv1;
-        protected Vector3[] _vertices;
-        protected int[] _triangles;
-        protected Vector4[] _tangents;
-
-        protected bool _isMeshDirty = false;
-        protected MeshRenderer _meshRenderer;
-        protected MeshFilter _meshFilter;
-        protected Mesh _mesh;
-        private Color _oldColor;
-        private Sprite _oldSprite;
-        private Material _oldMaterial;
-        private MaterialKey _oldMaterialKey;
-        public static Dictionary<MaterialKey, MaterialValue> MaterialMap = new Dictionary<MaterialKey, MaterialValue>();
+    public class CustomSprite : MonoBehaviour {
         private const string GeneratedMaterialName = "Generated Material (DONT change it)";
         private const string GeneratedMeshName = "Generated Mesh (DONT change it)";
+        public static Dictionary<MaterialKey, MaterialValue> materialMap = new Dictionary<MaterialKey, MaterialValue>();
+
+        // mesh data
+        protected Color[] colors;
+
+        protected bool isMeshDirty;
+        protected Mesh mesh;
+        protected MeshFilter meshFilter;
+        protected MeshRenderer meshRenderer;
+        private Color _oldColor;
+        private Material _oldMaterial;
+        private MaterialKey _oldMaterialKey;
+        private Sprite _oldSprite;
+        protected Vector4[] tangents;
+        protected int[] triangles;
+        protected Vector2[] uv0;
+        protected Vector2[] uv1;
+        protected Vector3[] vertices;
+
+        /// <summary>
+        ///     Vertex color of mesh.
+        /// </summary>
+        public Color color = Color.white;
+
+        /// <summary>
+        ///     Material to be used.
+        /// </summary>
+        public Material material;
+
+        /// <summary>
+        ///     Sorting order of MeshRenderer.
+        /// </summary>
+        public int sortingOrder;
+
+        /// <summary>
+        ///     Sprite from which mesh will be generated.
+        /// </summary>
+        public Sprite sprite;
 
         public bool RendererEnabled { get; private set; }
 
         /// <summary>
-        /// Is that sprite is staticaly batched?
+        ///     Is that sprite is staticaly batched?
         /// </summary>
-        public bool IsPartOfStaticBatch
-        {
-            get { return _meshRenderer.isPartOfStaticBatch; }
+        public bool IsPartOfStaticBatch {
+            get { return meshRenderer.isPartOfStaticBatch; }
         }
 
-        protected virtual void OnEnable()
-        {
-            _colors = new Color[4];
-            _uv1 = new Vector2[4];
-            _uv0 = new Vector2[4];
-            _vertices = new Vector3[4];
-            _triangles = new[] {2, 1, 0, 1, 2, 3};
-            _meshRenderer = GetComponent<MeshRenderer>();
-            _meshFilter = GetComponent<MeshFilter>();
+        protected virtual void OnEnable() {
+            colors = new Color[4];
+            uv1 = new Vector2[4];
+            uv0 = new Vector2[4];
+            vertices = new Vector3[4];
+            triangles = new[] {2, 1, 0, 1, 2, 3};
+            meshRenderer = GetComponent<MeshRenderer>();
+            meshFilter = GetComponent<MeshFilter>();
 
-            if (_meshRenderer == null)
-                _meshRenderer = gameObject.AddComponent<MeshRenderer>();
+            if (meshRenderer == null)
+                meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            if (_meshFilter == null)
-                _meshFilter = gameObject.AddComponent<MeshFilter>();
+            if (meshFilter == null)
+                meshFilter = gameObject.AddComponent<MeshFilter>();
 
 #if UNITY_EDITOR
-            if (Material == null)
-            {
-                Material = Resources.GetBuiltinResource<Material>("Sprites-Default.mat");
-            }
+            if (material == null) material = Resources.GetBuiltinResource<Material>("Sprites-Default.mat");
 #endif
 
             TryReleaseMesh();
-            _meshFilter.sharedMesh = _mesh = new Mesh();
-            _mesh.MarkDynamic();
-            _mesh.name = GeneratedMeshName;
+            meshFilter.sharedMesh = mesh = new Mesh();
+            mesh.MarkDynamic();
+            mesh.name = GeneratedMeshName;
 
-            _tangents = new Vector4[4];
-            for (int i = 0; i < _tangents.Length; i++)
-                _tangents[i] = new Vector4(1, 0, 0);
+            tangents = new Vector4[4];
+            for (var i = 0; i < tangents.Length; i++)
+                tangents[i] = new Vector4(1, 0, 0);
 
             UpdateMeshData(true);
 
-            RendererEnabled = _meshRenderer.enabled;
+            RendererEnabled = meshRenderer.enabled;
         }
 
-        protected virtual void Start()
-        {
+        protected virtual void Start() {
             UpdateMeshData(true);
         }
 
-        private void OnWillRenderObject()
-        {
+        private void OnWillRenderObject() {
             UpdateMeshData();
-            if (Application.isPlaying && LightingSystem.Instance.EnableNormalMapping)
-            {
-                RendererEnabled = _meshRenderer.enabled;
-                _meshRenderer.enabled = false; 
+
+            if (Application.isPlaying && LightingSystem.Instance.enableNormalMapping) {
+                RendererEnabled = meshRenderer.enabled;
+                meshRenderer.enabled = false;
             }
         }
 
-        private void OnRenderObject()
-        {
-            if (Application.isPlaying && LightingSystem.Instance.EnableNormalMapping)
-            {
-                _meshRenderer.enabled = RendererEnabled;
-            }
+        private void OnRenderObject() {
+            if (Application.isPlaying && LightingSystem.Instance.enableNormalMapping) meshRenderer.enabled = RendererEnabled;
         }
 
         /// <summary>
-        /// Getting material from cache or instantiating new one.
+        ///     Getting material from cache or instantiating new one.
         /// </summary>
         /// <returns></returns>
-        public Material GetOrCreateMaterial()
-        {
+        public Material GetOrCreateMaterial() {
             TryReleaseMaterial();
 
-            if (Material == null || Sprite == null)
+            if (material == null || sprite == null)
                 return null;
 
             MaterialValue matValue;
-            var key = new MaterialKey(Material, Sprite.texture);
+            MaterialKey key = new MaterialKey(material, sprite.texture);
 
-            if (!MaterialMap.TryGetValue(key, out matValue))
-            {
-                var mat = (Material)Instantiate(Material);
+            if (!materialMap.TryGetValue(key, out matValue)) {
+                Material mat = Instantiate(material);
                 mat.name = GeneratedMaterialName;
-                mat.mainTexture = Sprite.texture;
-                MaterialMap[key] = matValue = new MaterialValue(mat, 1);
-            }
-            else
-            {
-                matValue.UsageCount++;
+                mat.mainTexture = sprite.texture;
+                materialMap[key] = matValue = new MaterialValue(mat, 1);
+            } else {
+                matValue.usageCount++;
             }
 
             _oldMaterialKey = key;
 
-            return matValue.Material;
+            return matValue.material;
         }
-        
+
         /// <summary>
-        /// Getting material from cache or instantiating new one.
+        ///     Getting material from cache or instantiating new one.
         /// </summary>
         /// <returns></returns>
-        public static Material GetOrCreateMaterial(Material baseMaterial, Texture2D texture, out MaterialKey materialKey)
-        {
-            if (baseMaterial == null || texture == null)
-            {
+        public static Material GetOrCreateMaterial(Material baseMaterial, Texture2D texture, out MaterialKey materialKey) {
+            if (baseMaterial == null || texture == null) {
                 materialKey = null;
+
                 return null;
             }
 
             MaterialValue matValue;
-            var key = materialKey = new MaterialKey(baseMaterial, texture);
+            MaterialKey key = materialKey = new MaterialKey(baseMaterial, texture);
 
-            if (!MaterialMap.TryGetValue(key, out matValue))
-            {
-                var mat = (Material)Instantiate(baseMaterial);
+            if (!materialMap.TryGetValue(key, out matValue)) {
+                Material mat = Instantiate(baseMaterial);
                 mat.name = GeneratedMaterialName;
                 mat.mainTexture = texture;
-                MaterialMap[key] = matValue = new MaterialValue(mat, 1);
+                materialMap[key] = matValue = new MaterialValue(mat, 1);
+            } else {
+                matValue.usageCount++;
             }
-            else
-            {
-                matValue.UsageCount++;
-            }
-            
-            return matValue.Material;
+
+            return matValue.material;
         }
 
         /// <summary>
-        /// Deleting material from cache with reference counting.
+        ///     Deleting material from cache with reference counting.
         /// </summary>
         /// <param name="key"></param>
-        public static void ReleaseMaterial(MaterialKey key)
-        {
+        public static void ReleaseMaterial(MaterialKey key) {
             MaterialValue matValue;
 
-            if (!MaterialMap.TryGetValue(key, out matValue))
+            if (!materialMap.TryGetValue(key, out matValue))
                 return;
 
-            matValue.UsageCount--;
+            matValue.usageCount--;
 
-            if (matValue.UsageCount <= 0)
-            {
-                Util.Destroy(matValue.Material);
-                MaterialMap.Remove(key);
+            if (matValue.usageCount <= 0) {
+                Util.Destroy(matValue.material);
+                materialMap.Remove(key);
             }
         }
 
-        void TryReleaseMesh()
-        {
-            if (_meshFilter != null && _meshFilter.sharedMesh != null &&
-                _meshFilter.sharedMesh.name == GeneratedMeshName && _mesh == _meshFilter.sharedMesh)
-            {
-                Util.Destroy(_meshFilter.sharedMesh);
-                _meshFilter.sharedMesh = null;
+        private void TryReleaseMesh() {
+            if (meshFilter != null && meshFilter.sharedMesh != null &&
+                meshFilter.sharedMesh.name == GeneratedMeshName && mesh == meshFilter.sharedMesh) {
+                Util.Destroy(meshFilter.sharedMesh);
+                meshFilter.sharedMesh = null;
             }
         }
 
-        void TryReleaseMaterial()
-        {
-            if (_oldMaterialKey != default(MaterialKey))
-            {
+        private void TryReleaseMaterial() {
+            if (_oldMaterialKey != default(MaterialKey)) {
                 ReleaseMaterial(_oldMaterialKey);
                 _oldMaterialKey = default(MaterialKey);
             }
         }
 
-        void OnDestroy()
-        {
+        private void OnDestroy() {
             TryReleaseMesh();
             TryReleaseMaterial();
         }
 
-        protected virtual void UpdateColor()
-        {
-            for (int i = 0; i < _colors.Length; i++)
-                _colors[i] = Color;
+        protected virtual void UpdateColor() {
+            for (var i = 0; i < colors.Length; i++)
+                colors[i] = color;
         }
 
         /// <summary>
-        /// Recreating mesh data for Sprite based on it's bounds.
+        ///     Recreating mesh data for Sprite based on it's bounds.
         /// </summary>
-        protected virtual void UpdateSprite()
-        {
-            if (Sprite == null)
+        protected virtual void UpdateSprite() {
+            if (sprite == null)
                 return;
-            
-            var rect = Sprite.textureRect;
-            var bounds = Sprite.bounds;
-            var tex = Sprite.texture;
-            var textureSize = new Point2(tex.width, tex.height);
-            
+
+            Rect rect = sprite.textureRect;
+            Bounds bounds = sprite.bounds;
+            Texture2D tex = sprite.texture;
+            Point2 textureSize = new Point2(tex.width, tex.height);
+
             // HACK: mipmap could cause texture padding sometimes so padded size of texture needs to be computed.
-            var realSize =
+            Point2 realSize =
 #if UNITY_EDITOR || UNITY_STANDALONE
                 tex.mipmapCount <= 1
 #else
@@ -260,174 +230,157 @@ namespace Light2D
                     ? textureSize
                     : new Point2(Mathf.NextPowerOfTwo(textureSize.x), Mathf.NextPowerOfTwo(textureSize.y));
 
-            var unitSize2 = rect.size/Sprite.pixelsPerUnit/2f;
-            var offest = (Vector2) bounds.center;
+            Vector2 unitSize2 = rect.size / sprite.pixelsPerUnit / 2f;
+            Vector2 offest = bounds.center;
 
-            _vertices[0] = new Vector3(-unitSize2.x + offest.x, -unitSize2.y + offest.y, 0);
-            _vertices[1] = new Vector3(unitSize2.x + offest.x, -unitSize2.y + offest.y, 0);
-            _vertices[2] = new Vector3(-unitSize2.x + offest.x, unitSize2.y + offest.y, 0);
-            _vertices[3] = new Vector3(unitSize2.x + offest.x, unitSize2.y + offest.y, 0);
+            vertices[0] = new Vector3(-unitSize2.x + offest.x, -unitSize2.y + offest.y, 0);
+            vertices[1] = new Vector3(unitSize2.x + offest.x, -unitSize2.y + offest.y, 0);
+            vertices[2] = new Vector3(-unitSize2.x + offest.x, unitSize2.y + offest.y, 0);
+            vertices[3] = new Vector3(unitSize2.x + offest.x, unitSize2.y + offest.y, 0);
 
-            _uv0[0] = new Vector2(rect.xMin/realSize.x, rect.yMin/realSize.y); // 0, 0
-            _uv0[1] = new Vector2(rect.xMax/realSize.x, rect.yMin/realSize.y); // 1, 0
-            _uv0[2] = new Vector2(rect.xMin/realSize.x, rect.yMax/realSize.y); // 0, 1
-            _uv0[3] = new Vector2(rect.xMax/realSize.x, rect.yMax/realSize.y); // 1, 1
+            uv0[0] = new Vector2(rect.xMin / realSize.x, rect.yMin / realSize.y); // 0, 0
+            uv0[1] = new Vector2(rect.xMax / realSize.x, rect.yMin / realSize.y); // 1, 0
+            uv0[2] = new Vector2(rect.xMin / realSize.x, rect.yMax / realSize.y); // 0, 1
+            uv0[3] = new Vector2(rect.xMax / realSize.x, rect.yMax / realSize.y); // 1, 1
 
-            for (int i = 0; i < 4; i++)
-            {
-                _colors[i] = Color;
-            }
+            for (var i = 0; i < 4; i++) colors[i] = color;
 
-            _meshRenderer.sharedMaterial = GetOrCreateMaterial();
+            meshRenderer.sharedMaterial = GetOrCreateMaterial();
         }
 
         /// <summary>
-        /// Clearing and rebuilding mesh.
+        ///     Clearing and rebuilding mesh.
         /// </summary>
-        protected virtual void UpdateMesh()
-        {
-            _mesh.Clear();
-            _mesh.vertices = _vertices;
-            _mesh.triangles = _triangles;
-            _mesh.uv = _uv0;
-            _mesh.uv2 = _uv1;
-            _mesh.colors = _colors;
-            _mesh.tangents = _tangents;
+        protected virtual void UpdateMesh() {
+            mesh.Clear();
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.uv = uv0;
+            mesh.uv2 = uv1;
+            mesh.colors = colors;
+            mesh.tangents = tangents;
         }
 
         /// <summary>
-        /// Checking public fields and mesh data, then rebuilding internal state if changes found.
+        ///     Checking public fields and mesh data, then rebuilding internal state if changes found.
         /// </summary>
         /// <param name="forceUpdate">Force update even if no changes found.</param>
-        protected virtual void UpdateMeshData(bool forceUpdate = false)
-        {
-            if (_meshRenderer == null || _meshFilter == null || IsPartOfStaticBatch)
+        protected virtual void UpdateMeshData(bool forceUpdate = false) {
+            if (meshRenderer == null || meshFilter == null || IsPartOfStaticBatch)
                 return;
 
-            _meshRenderer.sortingOrder = SortingOrder;
+            meshRenderer.sortingOrder = sortingOrder;
 
-            if (Color != _oldColor || forceUpdate)
-            {
+            if (color != _oldColor || forceUpdate) {
                 UpdateColor();
-                _isMeshDirty = true;
-                _oldColor = Color;
+                isMeshDirty = true;
+                _oldColor = color;
             }
-            if (Sprite != _oldSprite || Material != _oldMaterial || forceUpdate)
-            {
+
+            if (sprite != _oldSprite || material != _oldMaterial || forceUpdate) {
                 UpdateSprite();
-                _isMeshDirty = true;
-                _oldSprite = Sprite;
-                _oldMaterial = Material;
+                isMeshDirty = true;
+                _oldSprite = sprite;
+                _oldMaterial = material;
             }
-            if (_isMeshDirty)
-            {
+
+            if (isMeshDirty) {
                 UpdateMesh();
-                _isMeshDirty = false;
+                isMeshDirty = false;
             }
         }
 
         /// <summary>
-        /// Used as a value to material map to support reference counting.
+        ///     Used as a value to material map to support reference counting.
         /// </summary>
-        public class MaterialValue
-        {
+        public class MaterialValue {
             /// <summary>
-            /// Instantiated material from MaterialKey.Material with texture from MaterialKey.Texture.
+            ///     Instantiated material from MaterialKey.Material with texture from MaterialKey.Texture.
             /// </summary>
-            public Material Material;
+            public Material material;
 
             /// <summary>
-            /// Count of CustomSprites using that material.
+            ///     Count of CustomSprites using that material.
             /// </summary>
-            public int UsageCount;
+            public int usageCount;
 
-            public MaterialValue(Material material, int usageCount)
-            {
-                Material = material;
-                UsageCount = usageCount;
+            public MaterialValue(Material material, int usageCount) {
+                this.material = material;
+                this.usageCount = usageCount;
             }
         }
 
         /// <summary>
-        /// Used as a key to material map.
+        ///     Used as a key to material map.
         /// </summary>
-        public class MaterialKey : IEquatable<MaterialKey>
-        {
-            /// <summary>
-            /// Sprite's texture.
-            /// </summary>
-            public Texture2D Texture;
+        public class MaterialKey : IEquatable<MaterialKey> {
+            private static readonly IEqualityComparer<MaterialKey> TextureMaterialComparerInstance = new TextureMaterialEqualityComparer();
 
             /// <summary>
-            /// Non instantiated material.
+            ///     Non instantiated material.
             /// </summary>
-            public Material Material;
+            public Material material;
 
-            public MaterialKey(Material material, Texture2D texture)
-            {
-                Material = material;
-                Texture = texture;
+            /// <summary>
+            ///     Sprite's texture.
+            /// </summary>
+            public Texture2D texture;
+
+            public MaterialKey(Material material, Texture2D texture) {
+                this.material = material;
+                this.texture = texture;
             }
 
-            private sealed class TextureMaterialEqualityComparer : IEqualityComparer<MaterialKey>
-            {
-                public bool Equals(MaterialKey x, MaterialKey y)
-                {
+            public static IEqualityComparer<MaterialKey> TextureMaterialComparer {
+                get { return TextureMaterialComparerInstance; }
+            }
+
+            public bool Equals(MaterialKey other) {
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+
+                return Equals(texture, other.texture) && Equals(material, other.material);
+            }
+
+            public override bool Equals(object obj) {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+
+                return Equals((MaterialKey) obj);
+            }
+
+            public override int GetHashCode() {
+                unchecked {
+                    return ((texture != null ? texture.GetHashCode() : 0) * 397) ^ (material != null ? material.GetHashCode() : 0);
+                }
+            }
+
+            public static bool operator ==(MaterialKey left, MaterialKey right) {
+                return Equals(left, right);
+            }
+
+            public static bool operator !=(MaterialKey left, MaterialKey right) {
+                return !Equals(left, right);
+            }
+
+            private sealed class TextureMaterialEqualityComparer : IEqualityComparer<MaterialKey> {
+                public bool Equals(MaterialKey x, MaterialKey y) {
                     if (ReferenceEquals(x, y)) return true;
                     if (ReferenceEquals(x, null)) return false;
                     if (ReferenceEquals(y, null)) return false;
                     if (x.GetType() != y.GetType()) return false;
-                    return Equals(x.Texture, y.Texture) && Equals(x.Material, y.Material);
+
+                    return Equals(x.texture, y.texture) && Equals(x.material, y.material);
                 }
 
-                public int GetHashCode(MaterialKey obj)
-                {
-                    unchecked
-                    {
-                        return ((obj.Texture != null ? obj.Texture.GetHashCode() : 0)*397) ^ (obj.Material != null ? obj.Material.GetHashCode() : 0);
+                public int GetHashCode(MaterialKey obj) {
+                    unchecked {
+                        return ((obj.texture != null ? obj.texture.GetHashCode() : 0) * 397) ^ (obj.material != null ? obj.material.GetHashCode() : 0);
                     }
                 }
             }
-
-            private static readonly IEqualityComparer<MaterialKey> TextureMaterialComparerInstance = new TextureMaterialEqualityComparer();
-
-            public static IEqualityComparer<MaterialKey> TextureMaterialComparer
-            {
-                get { return TextureMaterialComparerInstance; }
-            }
-
-            public bool Equals(MaterialKey other)
-            {
-                if (ReferenceEquals(null, other)) return false;
-                if (ReferenceEquals(this, other)) return true;
-                return Equals(Texture, other.Texture) && Equals(Material, other.Material);
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != this.GetType()) return false;
-                return Equals((MaterialKey) obj);
-            }
-
-            public override int GetHashCode()
-            {
-                unchecked
-                {
-                    return ((Texture != null ? Texture.GetHashCode() : 0)*397) ^ (Material != null ? Material.GetHashCode() : 0);
-                }
-            }
-
-            public static bool operator ==(MaterialKey left, MaterialKey right)
-            {
-                return Equals(left, right);
-            }
-
-            public static bool operator !=(MaterialKey left, MaterialKey right)
-            {
-                return !Equals(left, right);
-            }
         }
     }
+
 }
